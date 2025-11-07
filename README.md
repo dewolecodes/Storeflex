@@ -10,7 +10,7 @@ storeflex is a full-stack E-Commerce project developed with Next.js 14, featurin
 
 #### 🔗 Live Version:
 
-https://storeflex.namvar.dev ⤴️
+https://storeflex-psi.vercel.app/ ⤴️
 
 ---
 
