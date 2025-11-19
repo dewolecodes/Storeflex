@@ -82,7 +82,7 @@ https://storeflex-psi.vercel.app/ ⤴️
 #### 💾 Cloning the repository
 
 ```shell
-git clone https://github.com/HosseinNamvar/storeflex.git
+git clone https://github.com/dewolecodes/Storeflex.git
 ```
 
 #### 📥 Install packages
