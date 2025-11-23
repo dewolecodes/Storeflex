@@ -18,11 +18,11 @@ export async function GET(req: NextRequest, { params }: { params: { productId: s
         const token = await getToken({ req, secret });
         if (!token?.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { productId } = params;
-    const product = await db.product.findUnique({ where: { id: productId } });
-    if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    const productTenantId = (product as unknown as { tenantId?: string }).tenantId;
-    if (productTenantId !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        const { productId } = params;
+        const product = await db.product.findUnique({ where: { id: productId } });
+        if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        const productTenantId = (product as unknown as { tenantId?: string }).tenantId;
+        if (productTenantId !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         return NextResponse.json({ product });
     } catch (err: unknown) {
@@ -39,12 +39,12 @@ export async function PUT(req: NextRequest, { params }: { params: { productId: s
 
         const { productId } = params;
         const existing = await db.product.findUnique({ where: { id: productId } });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    const existingTenantId = (existing as unknown as { tenantId?: string }).tenantId;
-    if (existingTenantId !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        const existingTenantId = (existing as unknown as { tenantId?: string }).tenantId;
+        if (existingTenantId !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const body = await req.json();
-    const allowed: Record<string, unknown> = {};
+        const body = await req.json();
+        const allowed: Record<string, unknown> = {};
         // Only allow updating a safe subset of fields
         if (typeof body.name === 'string' && body.name.trim() !== '') allowed.name = body.name.trim();
         if (typeof body.description === 'string') allowed.description = body.description;
@@ -61,7 +61,7 @@ export async function PUT(req: NextRequest, { params }: { params: { productId: s
             allowed.slug = body.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
         }
 
-    const updated = await db.product.update({ where: { id: productId }, data: allowed as Prisma.ProductUpdateInput });
+        const updated = await db.product.update({ where: { id: productId }, data: allowed as Prisma.ProductUpdateInput });
         return NextResponse.json({ product: updated });
     } catch (err: unknown) {
         console.error('Product PUT error', err);
@@ -76,10 +76,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { productId
         if (!token?.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { productId } = params;
-    const existing = await db.product.findUnique({ where: { id: productId } });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    const existingTenantIdDel = (existing as unknown as { tenantId?: string }).tenantId;
-    if (existingTenantIdDel !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        const existing = await db.product.findUnique({ where: { id: productId } });
+        if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        const existingTenantIdDel = (existing as unknown as { tenantId?: string }).tenantId;
+        if (existingTenantIdDel !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         // Delete images from Cloudinary (if any)
         try {

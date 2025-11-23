@@ -30,20 +30,26 @@ const ProductCard = ({
         </div>
       )}
       <div className="imageWrapper hover:border-gray-300 w-full h-[225px] block relative rounded-xl border border-gray-200 overflow-hidden transition-all duration-500">
-        <Image
-          src={imgUrl[0]}
-          alt={name}
-          fill
-          sizes="(max-width: 240px)"
-          className="object-contain transition-all duration-400 ease-out"
-        />
-        <Image
-          src={imgUrl[1]}
-          alt={name}
-          fill
-          sizes="(max-width: 240px)"
-          className="object-contain transition-all duration-400 ease-out opacity-0 scale-[0.9]"
-        />
+        {imgUrl[0] ? (
+          <Image
+            src={imgUrl[0]}
+            alt={name}
+            fill
+            sizes="(max-width: 240px)"
+            className="object-contain transition-all duration-400 ease-out"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">No image</div>
+        )}
+        {imgUrl[1] && (
+          <Image
+            src={imgUrl[1]}
+            alt={name}
+            fill
+            sizes="(max-width: 240px)"
+            className="object-contain transition-all duration-400 ease-out opacity-0 scale-[0.9]"
+          />
+        )}
       </div>
       <span className="inline-block text-gray-800 mt-2.5 mb-2 ml-2">{name}</span>
       <div className="h-16 flex flex-col">

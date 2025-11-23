@@ -162,18 +162,28 @@ const ListPage = () => {
     ),
     filledProductList: (
       <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-2 mb-14">
-        {productList.map((product) => (
-          <ProductCard
-            key={product.id}
-            imgUrl={[IMAGE_BASE_URL + product.images[0], IMAGE_BASE_URL + product.images[1]]}
-            name={product.name}
-            price={product.price}
-            isAvailable={product.isAvailable}
-            dealPrice={product.salePrice || undefined}
-            specs={product.specialFeatures}
-            url={"/product/" + product.id}
-          />
-        ))}
+        {productList.map((product) => {
+          const normalize = (img?: string) => {
+            if (!img) return '';
+            // If image is already an absolute URL (secure_url from Cloudinary), use it as-is
+            if (/^https?:\/\//i.test(img)) return img;
+            // otherwise prefix with IMAGE_BASE_URL if available
+            return (IMAGE_BASE_URL ?? '') + img;
+          };
+
+          return (
+            <ProductCard
+              key={product.id}
+              imgUrl={[normalize(product.images[0]), normalize(product.images[1])]}
+              name={product.name}
+              price={product.price}
+              isAvailable={product.isAvailable}
+              dealPrice={product.salePrice || undefined}
+              specs={product.specialFeatures}
+              url={"/product/" + product.id}
+            />
+          );
+        })}
       </div>
     ),
     categoryHasNoProduct: <NoItem pageHeader={getPageHeader()} />,

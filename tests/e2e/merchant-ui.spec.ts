@@ -6,6 +6,11 @@ import { loginAndAttachStorage } from './helpers/auth';
 const BASE = process.env.NEXTAUTH_URL || 'http://127.0.0.1:3001';
 
 test('merchant UI flow: register -> login -> create product with image', async ({ page, request }) => {
+    // Skip browser UI test when running under the `api` project (which has no browser)
+    if (test.info().project.name === 'api') {
+        test.skip(true, 'Browser UI test - skipped for api project');
+        return;
+    }
     const timestamp = Date.now();
     const email = `e2e+${timestamp}@example.com`;
     const password = 'TestPass123!';
@@ -32,8 +37,8 @@ test('merchant UI flow: register -> login -> create product with image', async (
 
     // Confirm authenticated by loading dashboard in the authenticated page
     await authPage.goto(`${BASE}/dashboard`);
-    // Wait for a visible dashboard heading instead of networkidle which can be flaky
-    await authPage.waitForSelector('text=Dashboard', { timeout: 10000 });
+    // Wait for a visible dashboard content block (Total products) instead of networkidle which can be flaky
+    await authPage.waitForSelector('text=Total products', { timeout: 10000 });
 
     // 3) Navigate to new product page
     await authPage.goto(`${BASE}/dashboard/products/new`);
@@ -99,6 +104,8 @@ test('merchant UI flow: register -> login -> create product with image', async (
     const createReqPromise = authPage.waitForRequest((r) => r.url().includes('/api/merchant/products') && r.method() === 'POST', { timeout: 10000 }).catch(() => null);
     const createResPromise = authPage.waitForResponse((r) => r.url().includes('/api/merchant/products') && r.request().method() === 'POST', { timeout: 15000 }).catch(() => null);
 
+    // Wait until Save is enabled (uploads finished) to avoid race where button is still disabled
+    await authPage.waitForSelector('button:has-text("Save"):not([disabled])', { timeout: 10000 });
     await authPage.click('button:has-text("Save")');
 
     const createReq = await createReqPromise;

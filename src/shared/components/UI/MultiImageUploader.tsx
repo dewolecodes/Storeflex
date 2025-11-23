@@ -7,10 +7,12 @@ type Props = {
     existingPublicIds?: string[]; // aligned with existingImages
     productId?: string | null;
     onChange?: (images: string[], publicIds: string[]) => void;
+    /** optional callback to inform parent when uploads are in progress */
+    onUploadStateChange?: (uploading: boolean) => void;
     maxFiles?: number;
 };
 
-export default function MultiImageUploader({ existingImages = [], existingPublicIds = [], productId = null, onChange, maxFiles = 10 }: Props) {
+export default function MultiImageUploader({ existingImages = [], existingPublicIds = [], productId = null, onChange, onUploadStateChange, maxFiles = 10 }: Props) {
     const [images, setImages] = useState<string[]>([...existingImages]);
     const [publicIds, setPublicIds] = useState<string[]>([...existingPublicIds]);
     const [previews, setPreviews] = useState<string[]>([]); // local file previews (for new files)
@@ -22,6 +24,10 @@ export default function MultiImageUploader({ existingImages = [], existingPublic
         // notify parent
         onChange?.(images, publicIds);
     }, [images, publicIds, onChange]);
+
+    useEffect(() => {
+        onUploadStateChange?.(uploading);
+    }, [uploading, onUploadStateChange]);
 
     useEffect(() => {
         return () => {

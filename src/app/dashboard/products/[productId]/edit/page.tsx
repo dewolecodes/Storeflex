@@ -24,6 +24,7 @@ export default function EditProductPage() {
     const [error, setError] = useState<string | null>(null);
     const [existingImages, setExistingImages] = useState<string[]>([]);
     const [existingPublicIds, setExistingPublicIds] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -126,7 +127,7 @@ export default function EditProductPage() {
                     <label className="block text-sm font-medium mb-1">Images</label>
                     <div className="mt-2">
                         {/* MultiImageUploader handles uploads, preview, reorder, and delete */}
-                        <MultiImageUploader existingImages={existingImages} existingPublicIds={existingPublicIds} productId={productId} onChange={(imgs, pids) => { setExistingImages(imgs); setExistingPublicIds(pids); }} />
+                        <MultiImageUploader existingImages={existingImages} existingPublicIds={existingPublicIds} productId={productId} onChange={(imgs, pids) => { setExistingImages(imgs); setExistingPublicIds(pids); }} onUploadStateChange={(u) => setIsUploading(u)} />
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -135,8 +136,9 @@ export default function EditProductPage() {
                         <span className="text-sm">Available</span>
                     </label>
                 </div>
+                {isUploading && <div className="text-sm text-yellow-600">Uploading images — please wait before saving.</div>}
                 <div className="flex items-center gap-3">
-                    <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded">{saving ? 'Saving...' : 'Save'}</button>
+                    <button type="submit" disabled={saving || isUploading} className="px-4 py-2 bg-blue-600 text-white rounded">{saving ? 'Saving...' : 'Save'}</button>
                     <button type="button" onClick={() => router.push('/dashboard/products')} className="px-4 py-2 border rounded">Cancel</button>
                 </div>
             </form>

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         const { productId, imageUrl } = body || {};
         if (!productId || !imageUrl) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
 
-    const product = await db.product.findUnique({ where: { id: productId } });
+        const product = await db.product.findUnique({ where: { id: productId } });
         if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
         if (product.tenantId !== token.tenantId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 

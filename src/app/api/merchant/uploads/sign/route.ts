@@ -15,14 +15,14 @@ export async function POST(req: NextRequest) {
         const token = await getToken({ req, secret });
         if (!token?.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
-    const { purpose, productId } = body || {};
+        const body = await req.json();
+        const { purpose, productId } = body || {};
 
         const tenantId = token.tenantId as string;
         const folder = `tenants/${tenantId}/${purpose === 'product' ? `products/${productId ?? 'temp'}` : 'assets'}`;
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    const paramsToSign: Record<string, unknown> = { timestamp, folder };
+        const timestamp = Math.floor(Date.now() / 1000);
+        const paramsToSign: Record<string, unknown> = { timestamp, folder };
 
         // signature using cloudinary utils
         const signature = cloudinary.utils.api_sign_request(paramsToSign, cloudinary.config().api_secret as string);

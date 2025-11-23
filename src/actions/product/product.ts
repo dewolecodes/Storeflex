@@ -128,7 +128,7 @@ export const getOneProduct = async (productID: string) => {
     const pathArray: TPath[] | null = await getPathByCategoryID(categoryData?.id ?? '', categoryData?.parentID ?? null);
     if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
-  const { description, ...others } = result as { specs?: ProductSpec[]; description?: string | null } & Record<string, unknown>;
+    const { description, ...others } = result as { specs?: ProductSpec[]; description?: string | null } & Record<string, unknown>;
     const mergedResult = {
       ...others,
       desc: (description ?? null) as string | null,

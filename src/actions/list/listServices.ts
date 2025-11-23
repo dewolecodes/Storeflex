@@ -113,7 +113,7 @@ const getProductsByCategories = async (categories: string[], sortData: TListSort
 
   const isInitialPrice = filters.priceMinMax[1] === 0;
 
-    try {
+  try {
     const result = await db.product.findMany({
       where: {
         AND: [
@@ -159,8 +159,8 @@ const getProductsByCategories = async (categories: string[], sortData: TListSort
         [sortData.sortName]: sortData.sortType,
       },
     });
-  if (!result) return null;
-  return result as TListItem[];
+    if (!result) return null;
+    return result as TListItem[];
   } catch {
     return null;
   }

@@ -11,6 +11,7 @@ export default function NewProductPage() {
     const [error, setError] = useState<string | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [imagePublicIds, setImagePublicIds] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -77,11 +78,12 @@ export default function NewProductPage() {
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1">Images</label>
-                    <MultiImageUploader onChange={(imgs, pids) => { setImages(imgs); setImagePublicIds(pids); }} />
+                    <MultiImageUploader onChange={(imgs, pids) => { setImages(imgs); setImagePublicIds(pids); }} onUploadStateChange={(u) => setIsUploading(u)} />
                     {/* previews are handled inside MultiImageUploader; no local preview state needed */}
                 </div>
+                {isUploading && <div className="text-sm text-yellow-600">Uploading images — please wait before saving.</div>}
                 <div className="flex items-center gap-3">
-                    <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">{loading ? 'Saving...' : 'Save'}</button>
+                    <button type="submit" disabled={loading || isUploading} className="px-4 py-2 bg-blue-600 text-white rounded">{loading ? 'Saving...' : 'Save'}</button>
                 </div>
             </form>
         </div>
