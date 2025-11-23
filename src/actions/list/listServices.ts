@@ -113,8 +113,8 @@ const getProductsByCategories = async (categories: string[], sortData: TListSort
 
   const isInitialPrice = filters.priceMinMax[1] === 0;
 
-  try {
-    const result: TListItem[] | null = await db.product.findMany({
+    try {
+    const result = await db.product.findMany({
       where: {
         AND: [
           {
@@ -122,21 +122,21 @@ const getProductsByCategories = async (categories: string[], sortData: TListSort
           },
           isAvailable !== null
             ? {
-                isAvailable: isAvailable,
-              }
+              isAvailable: isAvailable,
+            }
             : {},
           brands
             ? {
-                brandID: { in: brands },
-              }
+              brandID: { in: brands },
+            }
             : {},
           !isInitialPrice
             ? {
-                price: {
-                  gt: filters.priceMinMax[0],
-                  lte: filters.priceMinMax[1],
-                },
-              }
+              price: {
+                gt: filters.priceMinMax[0],
+                lte: filters.priceMinMax[1],
+              },
+            }
             : {},
         ],
       },
@@ -159,8 +159,8 @@ const getProductsByCategories = async (categories: string[], sortData: TListSort
         [sortData.sortName]: sortData.sortType,
       },
     });
-    if (!result) return null;
-    return result;
+  if (!result) return null;
+  return result as TListItem[];
   } catch {
     return null;
   }

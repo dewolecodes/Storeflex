@@ -1,0 +1,88 @@
+name: E2E Playwright tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      # Required secrets - configure these in the repository settings
+      # Use a service-backed MongoDB for CI if no external DATABASE_URL is provided.
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'mongodb://localhost:27017/storeflex_e2e' }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      # Playwright webServer in repo starts dev on port 3001; set NEXTAUTH_URL accordingly
+      NEXTAUTH_URL: http://127.0.0.1:3001
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      TEST_MERCHANT_EMAIL: ${{ secrets.TEST_MERCHANT_EMAIL }}
+      TEST_MERCHANT_PASSWORD: ${{ secrets.TEST_MERCHANT_PASSWORD }}
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Push Prisma schema to test DB
+        run: npx prisma db push --accept-data-loss
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Seed test merchant (CI)
+        # Run the repository seeder which writes .ci_test_merchant.env
+        run: node scripts/testRegister.ts
+
+      - name: Load seeded merchant creds into environment
+        run: |
+          if [ -f .ci_test_merchant.env ]; then
+            echo "Loading .ci_test_merchant.env into GITHUB_ENV"
+            cat .ci_test_merchant.env >> $GITHUB_ENV
+          else
+            echo "No .ci_test_merchant.env file found" && exit 1
+          fi
+
+      - name: Run Playwright E2E tests (Playwright will start dev server)
+        continue-on-error: false
+        run: npx playwright test --reporter=dot
+
+      - name: Cleanup seeded merchant (always)
+        if: always()
+        run: |
+          if [ -f .ci_test_merchant.env ]; then
+            node scripts/cleanupTestMerchant.ts || true
+          else
+            echo "No .ci_test_merchant.env to clean"
+          fi
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report

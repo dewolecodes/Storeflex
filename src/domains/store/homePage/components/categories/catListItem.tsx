@@ -20,11 +20,14 @@ const CategoryListItem = ({ categoryData, className }: TProps) => {
     >
       <Link href={"/list/" + group.url} className="text-gray-700 transition-colors duration-300 hover:text-gray-900">
         <div className="w-7 inline-block">
+          {
+            // fall back to a generic icon and default size when data is missing
+          }
           <Image
-            src={"/icons/" + group.iconUrl + ".svg"}
+            src={group?.iconUrl ? `/icons/${group.iconUrl}.svg` : '/icons/otherCatIcon.svg'}
             alt={group.name}
-            width={group.iconSize[0]}
-            height={group.iconSize[1]}
+            width={group?.iconSize?.[0] ?? 24}
+            height={group?.iconSize?.[1] ?? 24}
           />
         </div>
         {group.name}

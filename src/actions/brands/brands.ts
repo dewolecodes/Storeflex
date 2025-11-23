@@ -13,9 +13,11 @@ export const addBrand = async (brandName: string) => {
   if (!brandName || brandName === "") return { error: "Invalid Data!" };
 
   try {
-    const result = db.brand.create({
+    const slug = brandName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    const result = await db.brand.create({
       data: {
         name: brandName,
+        slug,
       },
     });
     if (!result) return { error: "Can't Insert Data" };

@@ -17,7 +17,7 @@ export const getCategorySpecs = async (categoryID: string) => {
       },
       select: {
         parentID: true,
-        Category_SpecGroup: {
+        specs: {
           select: {
             specGroup: {
               select: {
@@ -37,8 +37,8 @@ export const getCategorySpecs = async (categoryID: string) => {
     if (catIdToSearch) {
       const result = await getSpecsAndParentID(catIdToSearch);
       if (!result) return false;
-      if (result.Category_SpecGroup.length > 0) {
-        result.Category_SpecGroup.forEach((specGroup) => specifications.unshift(specGroup.specGroup));
+      if (result.specs.length > 0) {
+        result.specs.forEach((specGroup) => specifications.unshift(specGroup.specGroup));
       }
       if (!result.parentID) return false;
       catIdToSearch = result.parentID;

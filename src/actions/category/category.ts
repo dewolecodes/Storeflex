@@ -97,6 +97,7 @@ export const addCategory = async (data: TAddCategory) => {
         parentID: data.parentID,
         name: data.name,
         url: data.url,
+        slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
         iconSize: [...data.iconSize],
         iconUrl: data.iconUrl,
       },

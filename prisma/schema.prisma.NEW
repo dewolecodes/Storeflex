@@ -44,6 +44,7 @@ model Tenant {
   categories      Category[]
   brands          Brand[]
   
+  @@index([slug])
   @@index([status])
 }
 
@@ -89,6 +90,7 @@ model User {
   accounts        Account[]
   
   @@index([tenantId])
+  @@index([email])
   @@index([role])
 }
 
@@ -135,7 +137,7 @@ model Customer {
   orders          Order[]
   addresses       Address[]
   
-  
+  @@index([email])
 }
 
 // ====================== PRODUCT SECTION ======================
@@ -216,7 +218,6 @@ model Product {
   
   // Media
   images          String[]                      // Cloudinary URLs
-  imagesPublicIds String[]                      // Corresponding Cloudinary public_ids
   thumbnail       String?                       // Primary image
   
   // Status & Inventory
@@ -252,22 +253,6 @@ model Product {
 type ProductSpec {
   specGroupID String
   specValues  String[]
-}
-
-model PageVisit {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
-  time             DateTime? @default(now())
-  pageType         PageType
-  pagePath         String?
-  deviceResolution String?
-  productID        String?   @db.ObjectId
-  product          Product?  @relation(fields: [productID], references: [id])
-}
-
-enum PageType {
-  MAIN
-  LIST
-  PRODUCT
 }
 
 model Category_OptionSet {
@@ -346,7 +331,7 @@ model Order {
   merchantRevenue Float?
   
   // Shipping
-  shippingAddress Json?
+  shippingAddress Address?
   shippingMethod  ShippingMethod @default(STANDARD)
   trackingNumber  String?
   
@@ -414,15 +399,113 @@ enum OrderStatus {
 }
 
 enum ShippingMethod {
-  STANDARD
-  EXPRESS
-  PICKUP
+  STANDARD       // 5-7 days
+  EXPRESS        // 2-3 days
+  OVERNIGHT      // Next day
+  PICKUP         // Local pickup
 }
 
 enum PaymentMethod {
-  CARD
-  CASH
-  STRIPE
+  CREDIT_CARD
+  DEBIT_CARD
   PAYPAL
+  STRIPE
+  BANK_TRANSFER
 }
 
+// ====================== ANALYTICS SECTION ======================
+
+model PageVisit {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  
+  time            DateTime  @default(now())
+  pageType        PageType
+  pagePath        String?
+  deviceResolution String?
+  
+  // Optional product reference (for product pages)
+  productId       String?   @db.ObjectId
+  product         Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  
+  // Optional tenant reference (for analytics per merchant)
+  tenantId        String?   @db.ObjectId
+  
+  @@index([pageType])
+  @@index([tenantId])
+  @@index([productId])
+}
+
+enum PageType {
+  MAIN
+  LIST
+  PRODUCT
+  CHECKOUT
+  DASHBOARD
+}
+
+// ====================== AUDIT LOG SECTION ======================
+
+model AuditLog {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // User who performed action
+  userId          String    @db.ObjectId
+  
+  // Tenant context
+  tenantId        String    @db.ObjectId
+  
+  // Action details
+  action          String    // CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, etc.
+  entity          String    // Entity type (Product, Order, etc.)
+  entityId        String    @db.ObjectId
+  
+  // Change details
+  oldData         String?   // JSON string
+  newData         String?   // JSON string
+  
+  // IP & User Agent
+  ipAddress       String?
+  userAgent       String?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+}
+
+// ====================== NOTIFICATIONS SECTION ======================
+
+model Notification {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // Recipient
+  userId          String    @db.ObjectId
+  
+  // Notification details
+  type            NotificationType
+  title           String
+  message         String
+  data            String?   // JSON - additional context
+  
+  // Status
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  
+  // Metadata
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime?
+  
+  @@index([userId])
+  @@index([isRead])
+}
+
+enum NotificationType {
+  NEW_ORDER
+  ORDER_SHIPPED
+  PAYMENT_RECEIVED
+  PRODUCT_LOW_STOCK
+  SUBSCRIPTION_EXPIRING
+  ACCOUNT_ALERT
+  SYSTEM_ALERT
+}

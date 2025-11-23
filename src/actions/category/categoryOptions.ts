@@ -30,6 +30,7 @@ export const getOptionSetByCatID = async (categoryID: string) => {
   if (!categoryID || categoryID === "") return { error: "Invalid Data!" };
 
   try {
+    // Prisma relation names vary with the schema
     const result: TOptionSet[] = await db.optionSet.findMany({
       where: {
         Category_Option: {
@@ -56,7 +57,7 @@ export const addOptionSet = async (data: TOptionSet) => {
         id: data.id,
       },
       data: {
-        Category_Option: {
+        options: {
           create: {
             option: {
               create: {
@@ -175,7 +176,7 @@ export const addSpecGroup = async (data: TSpecGroup) => {
         id: data.id,
       },
       data: {
-        Category_SpecGroup: {
+        specs: {
           create: {
             specGroup: {
               create: {

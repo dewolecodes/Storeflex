@@ -17,7 +17,7 @@ export const loadState = () => {
   }
 };
 //eslint-disable-next-line
-export const saveState = (state: any) => {
+export const saveState = (state: Record<string, unknown>) => {
   try {
     const serializedState = JSON.stringify(state);
     localStorage.setItem(localStorageName, serializedState);
