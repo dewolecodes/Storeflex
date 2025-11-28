@@ -30,6 +30,7 @@ const ListPage = () => {
   const [subCategories, setSubCategories] = useState<TProductPath[]>([]);
 
   const [sortIndex, setSortIndex] = useState(0);
+  const [selectedView, setSelectedView] = useState<'all' | 'topDeals' | 'inStock'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [isFilterApplied, setIsFilterApplied] = useState(false);
   const [filters, setFilters] = useState<TFilters>(DEFAULT_FILTERS);
@@ -39,6 +40,8 @@ const ListPage = () => {
   });
 
   const [isListLoading, setIsListLoading] = useState(true);
+
+  const [selectedSubCategoryFilter, setSelectedSubCategoryFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const getProductsList = async () => {
@@ -160,9 +163,17 @@ const ListPage = () => {
         <ProductListSkeleton />
       </div>
     ),
-    filledProductList: (
-      <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-2 mb-14">
-        {productList.map((product) => {
+    filledProductList: (() => {
+      // derive displayed products based on selected view
+      const displayedProducts = productList.filter((product) => {
+        if (selectedView === 'topDeals') return product.salePrice != null && product.salePrice < product.price;
+        if (selectedView === 'inStock') return Boolean(product.isAvailable);
+        return true;
+      });
+
+      return (
+        <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-2 mb-14">
+          {displayedProducts.map((product) => {
           const normalize = (img?: string) => {
             if (!img) return '';
             // If image is already an absolute URL (secure_url from Cloudinary), use it as-is
@@ -171,21 +182,22 @@ const ListPage = () => {
             return (IMAGE_BASE_URL ?? '') + img;
           };
 
-          return (
-            <ProductCard
-              key={product.id}
-              imgUrl={[normalize(product.images[0]), normalize(product.images[1])]}
-              name={product.name}
-              price={product.price}
-              isAvailable={product.isAvailable}
-              dealPrice={product.salePrice || undefined}
-              specs={product.specialFeatures}
-              url={"/product/" + product.id}
-            />
-          );
-        })}
-      </div>
-    ),
+            return (
+              <ProductCard
+                key={product.id}
+                imgUrl={[normalize(product.images[0]), normalize(product.images[1])]}
+                name={product.name}
+                price={product.price}
+                isAvailable={product.isAvailable}
+                dealPrice={product.salePrice || undefined}
+                specs={product.specialFeatures}
+                url={"/product/" + product.id}
+              />
+            );
+          })}
+        </div>
+      );
+    })(),
     categoryHasNoProduct: <NoItem pageHeader={getPageHeader()} />,
     filterHasNoProduct: (
       <div className="flex flex-col items-center justify-center text-sm min-h-[400px] gap-4">
@@ -235,6 +247,22 @@ const ListPage = () => {
                 </Link>
               ))}
             </div>
+          )}
+        </div>
+        {/* Views / Tabs: All / Top Deals / In Stock */}
+        <div className="w-full flex gap-2 justify-center mt-3 mb-2">
+          <button className={`px-3 py-1 rounded ${selectedView === 'all' ? 'bg-white border' : 'bg-transparent'}`} onClick={() => setSelectedView('all')}>All</button>
+          <button className={`px-3 py-1 rounded ${selectedView === 'topDeals' ? 'bg-white border' : 'bg-transparent'}`} onClick={() => setSelectedView('topDeals')}>Top Deals</button>
+          <button className={`px-3 py-1 rounded ${selectedView === 'inStock' ? 'bg-white border' : 'bg-transparent'}`} onClick={() => setSelectedView('inStock')}>In Stock</button>
+          {subCategories?.length > 0 && (
+            <select value={selectedSubCategoryFilter ?? ''} onChange={(e) => {
+              const v = e.target.value;
+              setSelectedSubCategoryFilter(v || null);
+              if (v) router.push(pathName + '/' + v);
+            }} className="ml-3 px-2 py-1 rounded border bg-white text-sm">
+              <option value="">By Category</option>
+              {subCategories.map((c) => <option key={c.url} value={c.url}>{c.label}</option>)}
+            </select>
           )}
         </div>
       </div>

@@ -99,7 +99,7 @@ export default function EditProductPage() {
     if (loading) return <div className="p-4 bg-white rounded shadow">Loading…</div>;
 
     return (
-        <div className="max-w-2xl bg-white p-6 rounded shadow">
+        <div className="w-full max-w-2xl mx-auto bg-white p-4 sm:p-6 rounded shadow">
             <h2 className="text-lg font-semibold mb-4">Edit product</h2>
             {error && <div className="mb-4 text-red-600">{error}</div>}
             <form onSubmit={handleSave} className="space-y-4">

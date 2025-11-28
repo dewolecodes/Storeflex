@@ -22,6 +22,7 @@ type TProps = {
   data: TGetAllCategories;
   categories: TGetAllCategories[];
   onReset: () => void;
+  tenantId?: string;
 };
 
 const initialCategory: TAddCategory = {
@@ -32,7 +33,7 @@ const initialCategory: TAddCategory = {
   iconUrl: null,
 };
 
-const RowCatGroup = ({ data, categories, onReset }: TProps) => {
+const RowCatGroup = ({ data, categories, onReset, tenantId }: TProps) => {
   const { id: groupId, name } = data;
   const [showOptions, setShowOptions] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -64,7 +65,7 @@ const RowCatGroup = ({ data, categories, onReset }: TProps) => {
         updatedData.iconSize = [...groupCategoryData.iconSize];
     }
     setIsLoading(true);
-    const response = await updateCategory(updatedData);
+    const response = await updateCategory(updatedData, tenantId);
     if (!response.error) {
       setShowEdit(false);
       setIsLoading(false);
@@ -78,7 +79,7 @@ const RowCatGroup = ({ data, categories, onReset }: TProps) => {
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const response = await deleteCategory(groupId);
+    const response = await deleteCategory(groupId, tenantId);
     if (response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);
@@ -157,6 +158,7 @@ const RowCatGroup = ({ data, categories, onReset }: TProps) => {
                   key={cat.id}
                   subCategories={categories.filter((c) => c.parentID === cat.id)}
                   onReset={onReset}
+                  tenantId={tenantId}
                 />
               )
           )}

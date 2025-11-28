@@ -3,9 +3,7 @@ import { db } from '../../src/shared/lib/db';
 import path from 'path';
 import { loginAndAttachStorage } from './helpers/auth';
 
-const BASE = process.env.NEXTAUTH_URL || 'http://127.0.0.1:3001';
-
-test('merchant UI flow: register -> login -> create product with image', async ({ page, request }) => {
+test('merchant UI flow: register -> login -> create product with image', async ({ page, browser, request }) => {
     // Skip browser UI test when running under the `api` project (which has no browser)
     if (test.info().project.name === 'api') {
         test.skip(true, 'Browser UI test - skipped for api project');
@@ -17,7 +15,8 @@ test('merchant UI flow: register -> login -> create product with image', async (
     const storeName = `E2E Store ${timestamp}`;
 
     // 1) Register via API (faster and less flaky than submitting the UI form)
-    const regRes = await request.post(`${BASE}/api/auth/register`, {
+    // Use relative paths so Playwright's baseURL from config is honored.
+    const regRes = await request.post('/api/auth/register', {
         headers: { 'content-type': 'application/json' },
         data: { storeName, email, password },
     });
@@ -27,36 +26,41 @@ test('merchant UI flow: register -> login -> create product with image', async (
     }
 
     // 2) Authenticate via API and get storage/cookies
-    const storage = await loginAndAttachStorage(request, page, BASE, email, password);
+    const storage = await loginAndAttachStorage(request, page, email, password);
 
     // Create a new browser context that includes the authenticated storage state
-    // so the browser page is authenticated reliably.
-    const browser = page.context().browser();
     const authContext = await browser.newContext({ storageState: storage });
     const authPage = await authContext.newPage();
 
-    // Confirm authenticated by loading dashboard in the authenticated page
-    await authPage.goto(`${BASE}/dashboard`);
-    // Wait for a visible dashboard content block (Total products) instead of networkidle which can be flaky
-    await authPage.waitForSelector('text=Total products', { timeout: 10000 });
+    // Navigate but don't block on 'load' (dev server HMR can delay load); wait for DOMContentLoaded
+    await authPage.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    // Wait for a stable dashboard element; if it doesn't appear, capture diagnostics
+    try {
+        await authPage.waitForSelector('text=Total products', { timeout: 60000 });
+    } catch (e) {
+        const url = authPage.url();
+        const loginVisible = await authPage.locator('text=Login').count();
+        // eslint-disable-next-line no-console
+        console.error('Failed to reach dashboard after auth', { url, loginVisible });
+        throw new Error(`Failed to reach dashboard after auth; current url: ${url}`);
+    }
 
     // 3) Navigate to new product page
-    await authPage.goto(`${BASE}/dashboard/products/new`);
+    await authPage.goto('/dashboard/products/new');
     await authPage.fill('input[name="name"]', 'E2E Product ' + timestamp);
     await authPage.fill('input[name="price"]', '4.99');
 
     // 4) Upload image via the MultiImageUploader file input
+    // Set up request/response watchers BEFORE selecting the file so we don't miss fast requests.
+    const signReqPromise = authPage.waitForRequest((r) => r.url().includes('/api/merchant/uploads/sign') && r.method() === 'POST', { timeout: 15000 }).catch(() => null);
+    const signResPromise = authPage.waitForResponse((r) => r.url().includes('/api/merchant/uploads/sign') && r.request().method() === 'POST', { timeout: 20000 }).catch(() => null);
+    const cloudUploadReqPromise = authPage.waitForRequest((r) => r.url().includes('api.cloudinary.com') && r.method() === 'POST', { timeout: 30000 }).catch(() => null);
+    const cloudUploadResPromise = authPage.waitForResponse((r) => r.url().includes('api.cloudinary.com') && r.request().method() === 'POST', { timeout: 35000 }).catch(() => null);
+
     // Use an inline tiny PNG base64 and attach as a file payload so Cloudinary receives valid binary
     const tinyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-    const fileInput = await authPage.waitForSelector('input[type=file]');
-    await fileInput.setInputFiles([{ name: 'tiny.png', mimeType: 'image/png', buffer: Buffer.from(tinyPngBase64, 'base64') }]);
-    // click the Upload button within the uploader
-    const signReqPromise = authPage.waitForRequest((r) => r.url().includes('/api/merchant/uploads/sign') && r.method() === 'POST', { timeout: 10000 }).catch(() => null);
-    const signResPromise = authPage.waitForResponse((r) => r.url().includes('/api/merchant/uploads/sign') && r.request().method() === 'POST', { timeout: 15000 }).catch(() => null);
-    const cloudUploadReqPromise = authPage.waitForRequest((r) => r.url().includes('api.cloudinary.com') && r.method() === 'POST', { timeout: 20000 }).catch(() => null);
-    const cloudUploadResPromise = authPage.waitForResponse((r) => r.url().includes('api.cloudinary.com') && r.request().method() === 'POST', { timeout: 30000 }).catch(() => null);
-
-    await authPage.click('button:has-text("Upload")');
+    // set files on the hidden input (uploader hides native input and shows a button)
+    await authPage.setInputFiles('input[type=file]', [{ name: 'tiny.png', mimeType: 'image/png', buffer: Buffer.from(tinyPngBase64, 'base64') }]);
 
     const signReq = await signReqPromise;
     const signRes = await signResPromise;
@@ -81,7 +85,7 @@ test('merchant UI flow: register -> login -> create product with image', async (
     const cloudRes = await cloudUploadResPromise;
     if (cloudReq && cloudRes) {
         // eslint-disable-next-line no-console
-        console.log('Cloud upload request headers:', JSON.stringify(Array.from(cloudReq.headers())));
+        console.log('Cloud upload request headers:', JSON.stringify(cloudReq.headers()));
         try {
             const cloudJson = await cloudRes.json();
             // eslint-disable-next-line no-console

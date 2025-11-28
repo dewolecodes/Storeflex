@@ -6,13 +6,12 @@ import { APIRequestContext, Page } from '@playwright/test';
  *
  * @param request Playwright APIRequestContext (test fixture `request`)
  * @param page Playwright Page instance
- * @param base Base URL of the app (e.g. http://127.0.0.1:3001)
  * @param email User email
  * @param password User password
  */
-export async function loginAndAttachStorage(request: APIRequestContext, page: Page, base: string, email: string, password: string) {
+export async function loginAndAttachStorage(request: APIRequestContext, page: Page, email: string, password: string) {
     // 1) Get CSRF token
-    const csrfRes = await request.get(`${base}/api/auth/csrf`);
+    const csrfRes = await request.get('/api/auth/csrf');
     const csrfJson = await csrfRes.json();
     const csrfToken = csrfJson.csrfToken;
     if (!csrfToken) throw new Error('Failed to obtain CSRF token for login');
@@ -24,7 +23,7 @@ export async function loginAndAttachStorage(request: APIRequestContext, page: Pa
     params.set('password', password);
     params.set('callbackUrl', '/dashboard');
 
-    const loginRes = await request.post(`${base}/api/auth/callback/credentials`, {
+    const loginRes = await request.post('/api/auth/callback/credentials', {
         data: params.toString(),
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
     });

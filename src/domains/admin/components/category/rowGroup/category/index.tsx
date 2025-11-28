@@ -20,6 +20,7 @@ type TProps = {
   data: TGetAllCategories;
   subCategories: TGetAllCategories[];
   onReset: () => void;
+  tenantId?: string;
 };
 
 const initialCategory: TAddCategory = {
@@ -42,7 +43,7 @@ let selectedSubCategory: TEditSubCat = {
   url: "",
 };
 
-const Category = ({ onReset, data, subCategories }: TProps) => {
+const Category = ({ onReset, data, subCategories, tenantId }: TProps) => {
   const { id: categoryID, name: categoryName, url: categoryUrl } = data;
 
   const [showOptions, setShowOptions] = useState(false);
@@ -88,7 +89,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
     }
 
     setIsLoading(true);
-    const response = await updateCategory(updatedData);
+    const response = await updateCategory(updatedData, tenantId);
     if (!response.error) {
       setShowEdit(false);
       setIsLoading(false);
@@ -101,7 +102,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
 
   const handleDeleteCat = async () => {
     setIsLoading(true);
-    const response = await deleteCategory(categoryID);
+    const response = await deleteCategory(categoryID, tenantId);
     if (response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);
@@ -182,7 +183,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
     }
 
     setIsLoading(true);
-    const response = await updateCategory(updatedData);
+    const response = await updateCategory(updatedData, tenantId);
     if (!response.error) {
       setIsLoading(false);
       setErrorMsg("");
@@ -202,7 +203,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
 
   const handleDeleteSubCat = async () => {
     setIsLoading(true);
-    const response = await deleteCategory(selectedSubCategory.id);
+    const response = await deleteCategory(selectedSubCategory.id, tenantId);
     if (response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);

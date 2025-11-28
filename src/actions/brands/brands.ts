@@ -9,16 +9,16 @@ const ValidateUpdateBrand = z.object({
   name: z.string().min(3),
 });
 
-export const addBrand = async (brandName: string) => {
+export const addBrand = async (brandName: string, tenantId?: string) => {
   if (!brandName || brandName === "") return { error: "Invalid Data!" };
 
   try {
     const slug = brandName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createData: any = { name: brandName, slug };
+    if (tenantId) createData.tenantId = tenantId;
     const result = await db.brand.create({
-      data: {
-        name: brandName,
-        slug,
-      },
+      data: createData,
     });
     if (!result) return { error: "Can't Insert Data" };
     return { res: result };
@@ -27,9 +27,11 @@ export const addBrand = async (brandName: string) => {
   }
 };
 
-export const getAllBrands = async () => {
+export const getAllBrands = async (tenantId?: string) => {
   try {
-    const result: TBrand[] | null = await db.brand.findMany();
+    const result: TBrand[] | null = await db.brand.findMany(
+      tenantId ? { where: { tenantId } } : undefined
+    );
 
     if (!result) return { error: "Can't Get Data from Database!" };
     return { res: result };
@@ -38,13 +40,14 @@ export const getAllBrands = async () => {
   }
 };
 
-export const deleteBrand = async (brandID: string) => {
+export const deleteBrand = async (brandID: string, tenantId?: string) => {
   if (!brandID || brandID === "") return { error: "Invalid Data!" };
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { id: brandID };
+    if (tenantId) where.tenantId = tenantId;
     const result = await db.brand.delete({
-      where: {
-        id: brandID,
-      },
+      where,
     });
 
     if (!result) return { error: "Can't Delete!" };
@@ -54,20 +57,21 @@ export const deleteBrand = async (brandID: string) => {
   }
 };
 
-export const updateBrand = async (data: TBrand) => {
+export const updateBrand = async (data: TBrand & { tenantId?: string }) => {
   if (!ValidateUpdateBrand.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { id: data.id };
+    if (data.tenantId) where.tenantId = data.tenantId;
     const result = await db.brand.update({
-      where: {
-        id: data.id,
-      },
+      where,
       data: {
         name: data.name,
       },
     });
 
-    if (!result) return { error: "Can't Delete!" };
+    if (!result) return { error: "Can't Update!" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };

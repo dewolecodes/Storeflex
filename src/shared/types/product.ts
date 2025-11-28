@@ -55,11 +55,14 @@ export type TProduct = {
 
 export type TAddProductFormValues = {
   name: string;
+  tenantId?: string;
   isAvailable: boolean;
   specialFeatures: string[];
   brandID: string;
   desc?: string;
+  shortDescription?: string;
   price: string;
+  stock?: string;
   salePrice?: string;
   images: string[];
   categoryID: string;
@@ -69,6 +72,14 @@ export type TAddProductFormValues = {
 export type TProductListItem = {
   id: string;
   name: string;
+  price: number;
+  salePrice: number | null;
+  description: string | null;
+  shortDescription: string | null;
+  images: string[];
+  stock: number | null;
+  isAvailable: boolean;
+  brandID?: string | null;
   category: {
     id: string;
     name: string;

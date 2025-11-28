@@ -64,7 +64,7 @@ const TrafficView = () => {
   const paginationList = calculateTablePagination(totalNumber, pageNumberInt, TRAFFIC_LIST_PAGE_SIZE, 10);
 
   return (
-    <div className="text-sm text-gray-800 flex flex-col overflow-y-scroll">
+    <div className="text-sm text-gray-800 flex flex-col">
       <span className="mb-4">Total visits: {totalNumber || 0}</span>
       {isLoading ? (
         <div className="grid grid-cols-12 items-center justify-between gap-4 p-3 rounded-lg bg-gray-50">
@@ -77,28 +77,30 @@ const TrafficView = () => {
           {trafficList.map((item) => (
             <div
               key={item.id}
-              className="grid grid-cols-12 items-center justify-between gap-4 p-3 rounded-lg even:bg-gray-100"
+              className="flex flex-col sm:grid sm:grid-cols-12 items-start sm:items-center justify-between gap-3 p-3 rounded-lg even:bg-gray-100"
             >
-              <span className="w-[180px] col-span-2 text-center py-1 bg-white rounded-md border border-gray-400">
+              <span className="sm:w-[180px] sm:col-span-2 text-sm sm:text-center py-1 bg-white rounded-md border border-gray-400 px-2">
                 {item.time ? getFullTimeString(item.time) : ""}
               </span>
-              <span className="w-[160px] col-span-2 text-center py-1 text-gray-600 rounded-md border border-gray-300">
+              <span className="sm:w-[160px] sm:col-span-2 text-sm text-gray-600 sm:text-center py-1 rounded-md border border-gray-300 px-2">
                 {item.pageType}
               </span>
-              <span className="col-span-2 text-nowrap overflow-hidden">{item.pagePath}</span>
-              <div className="w-[110px] col-span-2 text-center py-1 rounded-md border border-gray-400">
+              <span className="sm:col-span-2 break-words truncate px-2">{item.pagePath}</span>
+              <div className="sm:w-[110px] sm:col-span-2 text-sm text-center py-1 rounded-md border border-gray-400 px-2">
                 {item.deviceResolution}
               </div>
-              <div className="col-span-3">
+              <div className="sm:col-span-3 px-2 text-sm">
                 {item.product && item.product?.category.name + " / " + item.product?.name}
               </div>
-              <Button
-                onClick={() => handleDelete(item.id)}
-                disabled={deletingId === item.id}
-                className={cn({ "opacity-50": deletingId === item.id })}
-              >
-                Delete
-              </Button>
+              <div className="px-2 mt-2 sm:mt-0">
+                <Button
+                  onClick={() => handleDelete(item.id)}
+                  disabled={deletingId === item.id}
+                  className={cn({ "opacity-50": deletingId === item.id })}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           ))}
           <Pagination currentPage={pageNumberInt} routeBase="/admin/trafficView/" pagesList={paginationList} />

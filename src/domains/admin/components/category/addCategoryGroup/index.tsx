@@ -1,4 +1,5 @@
 "use client";
+import { getSession } from 'next-auth/react';
 import { useState } from "react";
 
 import { TGetAllCategories, addCategory } from "@/actions/category/category";
@@ -49,7 +50,11 @@ const AddCategoryGroup = ({ onReset }: TProps) => {
     }
 
     setButtonDisabled(true);
-    const result = await addCategory(groupCategoryData);
+    // attach tenantId from session so categories are tenant-scoped
+    const session = await getSession();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tenantId = session?.user && typeof session.user === 'object' && 'tenantId' in session.user ? (session.user as any).tenantId : undefined;
+    const result = await addCategory(groupCategoryData, tenantId as string | undefined);
 
     if (result.res) {
       setGroupCategory(defaultGroupData);

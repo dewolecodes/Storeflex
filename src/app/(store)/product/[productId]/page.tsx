@@ -34,10 +34,10 @@ const ProductPage = () => {
 
   return (
     <div className="storeContainer">
-      <div className="w-full h-auto mt-[160px] flex flex-col">
-        <div className="w-full flex flex-col lg:flex-row gap-12">
+      <div className="w-full h-auto mt-[120px] sm:mt-[80px] px-2 sm:px-4 md:px-6 flex flex-col">
+        <div className="w-full flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-12 px-0">
           <div className="flex-grow">
-            <div className="block text-gray-700 w-full mb-10 text-sm">
+            <div className="block text-gray-700 w-full mb-6 sm:mb-10 text-xs sm:text-sm">
               {productInfo ? (
                 <>
                   <Link href={"/"} className="hover:font-medium after:mx-1 after:content-['/'] hover:text-gray-800">
@@ -95,26 +95,26 @@ const ProductPage = () => {
             )}
           </div>
         </div>
-        <div className="w-full h-auto flex gap-12 mt-10">
+        <div className="w-full h-auto flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-12 mt-6 sm:mt-10">
           <div className="w-full flex flex-col">
             {/* ----------------- SPECIFICATION SECTION ----------------- */}
-            <div className="w-full mb-[100px]">
-              <h2 className="font-light block text-2xl text-gray-900 py-5 border-b border-gray-300">Specification</h2>
+            <div className="w-full mb-8 sm:mb-[100px]">
+              <h2 className="font-light block text-xl sm:text-2xl text-gray-900 py-3 sm:py-5 border-b border-gray-300">Specification</h2>
               {productInfo ? (
                 productInfo.specifications.map((spec, index) => (
-                  <section key={index} className="w-full py-5 border-b border-gray-300">
+                  <section key={index} className="w-full py-3 sm:py-5 border-b border-gray-300">
                     <div className="flex items-center w-full">
                       <button className="size-8 inline-block relative border-none bg-white rounded-sm hover:bg-gray-200">
                         <MinusIcon width={12} className="absolute top-3.5 left-2.5 stroke-gray-700" />
                       </button>
-                      <h3 className="ml-3 inline-block text-gray-700">{spec.groupName}</h3>
+                      <h3 className="ml-2 sm:ml-3 inline-block text-xs sm:text-sm text-gray-700">{spec.groupName}</h3>
                     </div>
                     {spec.specs.map((row, index) => (
                       <div
                         key={index}
-                        className="w-full pt-3 flex items-stretch bg-white text-sm rounded-lg hover:bg-gray-100"
+                        className="w-full pt-2 sm:pt-3 flex flex-col sm:flex-row items-start sm:items-stretch gap-2 sm:gap-0 bg-white text-xs sm:text-sm rounded-lg hover:bg-gray-100"
                       >
-                        <div className="min-w-[160px] flex items-start ml-[42px] text-gray-500">
+                        <div className="min-w-[120px] sm:min-w-[160px] flex items-start ml-0 sm:ml-[42px] text-gray-500">
                           <span>{row.name}</span>
                         </div>
                         <div className="font-medium text-gray-800">
@@ -128,24 +128,24 @@ const ProductPage = () => {
                 ))
               ) : (
                 <>
-                  <div className="flex flex-col mt-4 mb-16 gap-4">
+                  <div className="flex flex-col mt-4 mb-8 sm:mb-16 gap-4">
                     <SK_Box width="200px" height="30px" />
-                    <div className={"flex gap-5 items-center ml-10"}>
+                    <div className={"flex gap-2 sm:gap-5 items-center ml-0 sm:ml-10"}>
                       <SK_Box width="10%" height="20px" />
                       <SK_Box width="40%" height="16px" />
                     </div>
-                    <div className={"flex gap-5 items-center ml-10"}>
+                    <div className={"flex gap-2 sm:gap-5 items-center ml-0 sm:ml-10"}>
                       <SK_Box width="10%" height="20px" />
                       <SK_Box width="40%" height="16px" />
                     </div>
                   </div>
-                  <div className="flex flex-col mt-4 mb-16 gap-4">
+                  <div className="flex flex-col mt-4 mb-8 sm:mb-16 gap-4">
                     <SK_Box width="200px" height="30px" />
-                    <div className={"flex gap-5 items-center ml-10"}>
+                    <div className={"flex gap-2 sm:gap-5 items-center ml-0 sm:ml-10"}>
                       <SK_Box width="10%" height="20px" />
                       <SK_Box width="40%" height="16px" />
                     </div>
-                    <div className={"flex gap-5 items-center ml-10"}>
+                    <div className={"flex gap-2 sm:gap-5 items-center ml-0 sm:ml-10"}>
                       <SK_Box width="10%" height="20px" />
                       <SK_Box width="40%" height="16px" />
                     </div>
@@ -156,9 +156,9 @@ const ProductPage = () => {
 
             {/* ----------------- USER REVIEWS ----------------- */}
             <div className="flex flex-col w-full h-auto">
-              <div className="flex justify-between items-center pb-4 border-b border-gray-300">
-                <h2 className="font-light block text-2xl text-gray-900">User Reviews</h2>
-                <button className="text-sm text-gray-900 px-6 py-1.5 rounded-md bg-gray-100 border border-gray-700 hover:bg-gray-200 active:bg-light-300">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 sm:pb-4 border-b border-gray-300 gap-3 sm:gap-0">
+                <h2 className="font-light block text-xl sm:text-2xl text-gray-900">User Reviews</h2>
+                <button className="text-xs sm:text-sm text-gray-900 px-4 sm:px-6 py-1.5 rounded-md bg-gray-100 border border-gray-700 hover:bg-gray-200 active:bg-light-300">
                   New Review
                 </button>
               </div>
@@ -189,7 +189,7 @@ const ProductPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="my-4 ml-12 text-sm leading-5 text-gary-900">
+                <div className="my-2 sm:my-4 ml-6 sm:ml-12 text-xs sm:text-sm leading-5 text-gary-900">
                   <span>
                     {`Lorem ipsum dolor sit amet consectetur adipisicing elit. 
                     Temporibus suscipit debitis reiciendis repellendus! Repellat rem beatae quo quis 
@@ -200,9 +200,9 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
-        <div className="w-full my-[100px]">
-          <h2 className="font-light block text-2xl text-gray-900">Similar Products</h2>
-          <div className="flex justify-between gap-3.5 w-full overflow-x-scroll pb-2">
+        <div className="w-full my-8 sm:my-[40px] lg:my-[100px]">
+          <h2 className="font-light block text-lg sm:text-2xl text-gray-900 mb-4">Similar Products</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:flex justify-between gap-2 sm:gap-3.5 w-full pb-2">
             {TopProducts.map((product, index) => (
               <ProductCard
                 key={index}
@@ -216,6 +216,16 @@ const ProductPage = () => {
               />
             ))}
           </div>
+        </div>
+      </div>
+      {/* Mobile sticky action bar */}
+      <div className="lg:hidden fixed bottom-3 left-0 right-0 px-3">
+        <div className="max-w-[980px] mx-auto bg-white rounded-lg p-2 sm:p-3 shadow-md flex items-center justify-between gap-2">
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs sm:text-sm font-medium truncate">{productInfo?.name}</span>
+            <span className="text-xs text-gray-600">€{productInfo?.price}</span>
+          </div>
+          <button className="bg-green-600 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm whitespace-nowrap">Add to cart</button>
         </div>
       </div>
     </div>

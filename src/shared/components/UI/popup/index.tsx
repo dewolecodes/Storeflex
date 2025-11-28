@@ -28,10 +28,11 @@ const Popup = ({
 }: TProps) => {
   return (
     <div className="fixed inset-0 overflow-hidden flex items-center justify-center">
-      <div className="absolute inset-0 cursor-pointer bg-[rgba(0,0,0,0.2)] backdrop-blur-[2px]" onClick={onClose} />
+      {/* overlay behind the modal */}
+      <div className="absolute inset-0 cursor-pointer bg-[rgba(0,0,0,0.2)] backdrop-blur-[2px] z-[5]" onClick={onClose} />
       <div
         className={
-          "w-[700px] max-h-[95vh] flex flex-col px-6 py-4 rounded-xl bg-white z-[10] text-gray-700 drop-shadow-sm origin-top animate-poppingUp ease-storeflex-easeOut"
+          "w-[700px] max-h-[95vh] flex flex-col px-6 py-4 rounded-xl bg-white z-[20] text-gray-700 drop-shadow-sm origin-top animate-poppingUp ease-storeflex-easeOut"
         }
         style={width ? { width: width } : {}}
       >
@@ -43,7 +44,10 @@ const Popup = ({
             </Button>
           </div>
         )}
-        {content}
+
+        {/* content wrapper: allows the main content to scroll while footer stays fixed */}
+        <div className="flex-1 overflow-auto my-3">{content}</div>
+
         <div className="flex pt-4 border-t text-sm border-gray-300 justify-center items-center gap-6">
           <Button className="w-[140px] py-1.5" onClick={onCancel}>
             {cancelBtnText || "Cancel"}

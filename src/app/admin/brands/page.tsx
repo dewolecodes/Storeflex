@@ -1,4 +1,5 @@
 "use client";
+import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { addBrand, deleteBrand, getAllBrands, updateBrand } from "@/actions/brands/brands";
@@ -14,13 +15,14 @@ const Brand = () => {
   const [isListLoading, setIsListLoading] = useState(true);
   const [brandList, setBrandList] = useState<TBrand[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
+  const [currentTenantId, setCurrentTenantId] = useState<string>("");
 
   const [showEdit, setShowEdit] = useState(false);
   const [editValue, setEditValue] = useState("");
   const [showDelete, setShowDelete] = useState(false);
 
-  const fetchBrands = async () => {
-    const response = await getAllBrands();
+  const fetchBrands = async (tenantId?: string) => {
+    const response = await getAllBrands(tenantId);
 
     if (response.res) {
       setIsListLoading(false);
@@ -29,20 +31,29 @@ const Brand = () => {
   };
 
   useEffect(() => {
-    fetchBrands();
+    const fetchTenantId = async () => {
+      const session = await getSession();
+      if (session?.user && typeof session.user === 'object' && 'tenantId' in session.user) {
+        const tenantId = session.user.tenantId as string;
+        setCurrentTenantId(tenantId);
+        await fetchBrands(tenantId);
+      }
+    };
+
+    fetchTenantId();
   }, []);
 
   const handleAdd = async () => {
     if (addValue !== "") {
       setIsLoading(true);
-      const response = await addBrand(addValue);
+      const response = await addBrand(addValue, currentTenantId);
       if (response.error) {
         setIsLoading(false);
       }
       if (response.res) {
         setIsLoading(false);
         setAddValue("");
-        fetchBrands();
+        fetchBrands(currentTenantId);
       }
     }
   };
@@ -59,6 +70,7 @@ const Brand = () => {
       const response = await updateBrand({
         id: selectedBrandID,
         name: editValue,
+        tenantId: currentTenantId,
       });
       if (response.error) {
         setIsLoading(false);
@@ -67,7 +79,7 @@ const Brand = () => {
       if (response.res) {
         setIsLoading(false);
         setShowEdit(false);
-        fetchBrands();
+        fetchBrands(currentTenantId);
       }
     }
   };
@@ -79,14 +91,14 @@ const Brand = () => {
   const handleDelete = async () => {
     if (selectedBrandID !== "") {
       setIsLoading(true);
-      const response = await deleteBrand(selectedBrandID);
+      const response = await deleteBrand(selectedBrandID, currentTenantId);
       if (response.error) {
         setIsLoading(false);
       }
       if (response.res) {
         setIsLoading(false);
         setShowDelete(false);
-        fetchBrands();
+        fetchBrands(currentTenantId);
       }
     }
   };

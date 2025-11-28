@@ -37,7 +37,7 @@ export default function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h2 className="text-lg font-semibold">Products</h2>
                 <Link href="/dashboard/products/new" className="px-3 py-1 bg-blue-600 text-white rounded">Add product</Link>
             </div>
@@ -49,17 +49,17 @@ export default function ProductsPage() {
                 <div className="p-4 bg-white rounded shadow">No products yet — this area will list tenant products.</div>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map((p) => (
                     <div key={p.id} className="p-4 bg-white rounded shadow">
-                        <div className="font-semibold">{p.name}</div>
+                        <div className="font-semibold truncate text-sm sm:text-base">{p.name}</div>
                         <div className="text-sm text-gray-600">Price: ${p.price.toFixed(2)}</div>
                         <div className="text-sm text-gray-600">Stock: {p.stock ?? '—'}</div>
                         <div className="text-sm text-gray-600">SKU: {p.sku ?? '—'}</div>
-                        <div className="mt-3 flex items-center gap-2">
-                            <a href={`/dashboard/products/${p.id}/edit`} className="px-2 py-1 bg-gray-100 rounded border text-sm">Edit</a>
+                        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <a href={`/dashboard/products/${p.id}/edit`} className="px-2 py-1 bg-gray-100 rounded border text-sm w-full sm:w-auto text-center">Edit</a>
                             <button
-                                className="px-2 py-1 bg-red-600 text-white rounded text-sm"
+                                className="px-2 py-1 bg-red-600 text-white rounded text-sm w-full sm:w-auto"
                                 onClick={async () => {
                                     if (!confirm('Delete this product?')) return;
                                     try {

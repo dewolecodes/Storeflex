@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { getAllBrands } from "@/actions/brands/brands";
 import { getAllCategoriesJSON } from "@/actions/category/category";
 import { getCategorySpecs } from "@/actions/category/specifications";
-import Button from "@/shared/components/UI/button";
 import DropDownList from "@/shared/components/UI/dropDown";
 import Input from "@/shared/components/UI/input";
+import MultiImageUploader from "@/shared/components/UI/MultiImageUploader";
 import { TBrand } from "@/shared/types";
 import { TGroupJSON } from "@/shared/types/categories";
 import { TAddProductFormValues } from "@/shared/types/product";
@@ -27,10 +27,11 @@ const brandListFirstItem: TDropDown = {
 
 type TProps = {
   formValues: TAddProductFormValues;
-  onChange: (props: TAddProductFormValues) => void;
+  onFormChange: (props: TAddProductFormValues) => void;
+  tenantId?: string;
 };
 
-const ProductForm = ({ formValues: props, onChange }: TProps) => {
+const ProductForm = ({ formValues: props, onFormChange, tenantId }: TProps) => {
   const [categoryList, setCategoryList] = useState<TDropDown[]>([categoryListFirstItem]);
   const [brandList, setBrandList] = useState<TDropDown[]>([brandListFirstItem]);
   const [selectedCategoryListIndex, setSelectedCategoryListIndex] = useState(0);
@@ -40,14 +41,14 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const result = await getAllCategoriesJSON();
+      const result = await getAllCategoriesJSON(tenantId);
       if (result.res) {
         setCategoryList(convertJSONtoDropdownList(result.res));
       }
     };
 
     const fetchBrands = async () => {
-      const result = await getAllBrands();
+      const result = await getAllBrands(tenantId);
       if (result.res) {
         setBrandList(convertBrandsToDropdownList(result.res));
       }
@@ -91,12 +92,12 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
 
     fetchCategories();
     fetchBrands();
-  }, []);
+  }, [tenantId]);
 
   const handleCategoryChange = (index: number) => {
     setSelectedCategoryListIndex(index);
     if (index === 0) {
-      onChange({
+      onFormChange({
         ...props,
         specifications: JSON.parse(JSON.stringify(props.specifications)),
         categoryID: "",
@@ -109,7 +110,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
 
   const handleBrandChange = (index: number) => {
     setSelectedBrandListIndex(index);
-    onChange({ ...props, brandID: brandList[index].value });
+    onFormChange({ ...props, brandID: brandList[index].value });
   };
 
   const getSpecGroup = async (categoryID: string) => {
@@ -122,7 +123,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
           specValues: item.specs.map(() => ""),
         });
       });
-      onChange({
+      onFormChange({
         ...props,
         specifications: JSON.parse(JSON.stringify(specArray)),
         categoryID: categoryID,
@@ -134,45 +135,45 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
   const handleSpecialFeatureChange = (index: number, value: string) => {
     const newArray = [...props.specialFeatures];
     newArray[index] = value;
-    onChange({ ...props, specialFeatures: newArray });
+    onFormChange({ ...props, specialFeatures: newArray });
   };
 
   return (
     <div className="flex flex-col overflow-y-scroll p-6 rounded-xl bg-white z-10 text-sm">
-      <div className="grid grid-col-4 gap-4">
-        <div className="flex items-center justify-between">
-          <span>Name:</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="whitespace-nowrap">Name:</span>
           <Input
             type="text"
-            className="w-[200px]"
+            className="w-full sm:w-[200px]"
             value={props.name}
             placeholder="Name..."
             onChange={(e) =>
-              onChange({
+              onFormChange({
                 ...props,
                 name: e.currentTarget.value,
               })
             }
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span>Short Descriptions:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="whitespace-nowrap">Short Descriptions:</span>
           <Input
             type="text"
-            className="w-[200px]"
-            value={props.desc}
+            className="w-full sm:w-[200px]"
+            value={props.shortDescription ?? props.desc ?? ""}
             onChange={(e) =>
-              onChange({
+              onFormChange({
                 ...props,
-                desc: e.currentTarget.value,
+                shortDescription: e.currentTarget.value,
               })
             }
             placeholder="Short Description..."
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span>Special Features:</span>
-          <div className="flex flex-col gap-2 mr-6">
+        <div className="flex flex-col">
+          <span className="whitespace-nowrap">Special Features:</span>
+          <div className="flex flex-col gap-2 mt-2">
             <Input
               type="text"
               value={props.specialFeatures[0]}
@@ -190,14 +191,14 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
             />
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <span>Price:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="whitespace-nowrap">Price:</span>
           <Input
             type="number"
-            className="w-[200px]"
+            className="w-full sm:w-[200px]"
             value={props.price}
             onChange={(e) =>
-              onChange({
+              onFormChange({
                 ...props,
                 price: e.currentTarget.value,
               })
@@ -205,14 +206,14 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
             placeholder="0.00€"
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span>Sale Price:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="whitespace-nowrap">Sale Price:</span>
           <Input
             type="number"
-            className="w-[200px]"
+            className="w-full sm:w-[200px]"
             value={props.salePrice}
             onChange={(e) =>
-              onChange({
+              onFormChange({
                 ...props,
                 salePrice: e.currentTarget.value,
               })
@@ -220,9 +221,24 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
             placeholder="0.00€"
           />
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="whitespace-nowrap">Stock:</span>
+          <Input
+            type="number"
+            className="w-full sm:w-[200px]"
+            value={props.stock ?? ""}
+            onChange={(e) =>
+              onFormChange({
+                ...props,
+                stock: e.currentTarget.value,
+              })
+            }
+            placeholder="0"
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span>Is In Stock:</span>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center mt-2 sm:mt-0">
             <span
               className={cn(
                 "select-none border rounded-sm px-3 py-1 ml-1 transition-colors duration-300",
@@ -230,7 +246,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
                   ? "text-gray-100 bg-green-500 border-green-500"
                   : "cursor-pointer hover:bg-gray-100 border border-gray-200"
               )}
-              onClick={() => onChange({ ...props, isAvailable: true })}
+              onClick={() => onFormChange({ ...props, isAvailable: true })}
             >
               In Stock
             </span>
@@ -241,61 +257,39 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
                   ? "text-gray-100 bg-red-500 hover:bg-red-500 border-red-500"
                   : "cursor-pointer hover:bg-gray-100 border border-gray-200"
               )}
-              onClick={() => onChange({ ...props, isAvailable: false })}
+              onClick={() => onFormChange({ ...props, isAvailable: false })}
             >
               Out Of Stock
             </span>
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span>Brand:</span>
-          <DropDownList
-            data={brandList}
-            width="200px"
-            selectedIndex={selectedBrandListIndex}
-            onChange={handleBrandChange}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <span>Images:</span>
-          <div className="flex flex-col gap-2 mr-6 w-[200px] justify-between">
-            {props.images.map((img, index) => (
-              <Input
-                key={index}
-                type="text"
-                value={img}
-                onChange={(e) => {
-                  props.images[index] = e.currentTarget.value;
-                  onChange({ ...props });
-                }}
-              />
-            ))}
+          <div className="w-full sm:w-[200px]">
+            <DropDownList
+              data={brandList}
+              width="100%"
+              selectedIndex={selectedBrandListIndex}
+              onChange={handleBrandChange}
+            />
           </div>
-          <Button
-            onClick={() => {
-              props.images.push("");
-              onChange({ ...props });
-            }}
-          >
-            +
-          </Button>
-          <Button
-            onClick={() => {
-              props.images.pop();
-              onChange({ ...props });
-            }}
-          >
-            -
-          </Button>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col w-full">
+          <span>Images:</span>
+          <div className="mt-2">
+            <MultiImageUploader onChange={(imgs) => onFormChange({ ...props, images: imgs })} />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span>Category</span>
-          <DropDownList
-            data={categoryList}
-            width="430px"
-            selectedIndex={selectedCategoryListIndex}
-            onChange={handleCategoryChange}
-          />
+          <div className="w-full sm:w-[430px]">
+            <DropDownList
+              data={categoryList}
+              width="100%"
+              selectedIndex={selectedCategoryListIndex}
+              onChange={handleCategoryChange}
+            />
+          </div>
         </div>
       </div>
       <div className="mt-5 border-t border-gray-200 w-full h-auto py-4 flex flex-col">
@@ -319,7 +313,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
                           value={props.specifications[groupIndex]?.specValues[specIndex]}
                           onChange={(e) => {
                             props.specifications[groupIndex].specValues[specIndex] = e.currentTarget.value;
-                            onChange({ ...props });
+                            onFormChange({ ...props });
                           }}
                         />
                       </div>

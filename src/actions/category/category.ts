@@ -67,9 +67,11 @@ const convertToJson = (categoriesTable: TCategory[]): TGroupJSON[] => {
   return groups;
 };
 
-export const getAllCategories = async () => {
+export const getAllCategories = async (tenantId?: string) => {
   try {
-    const result: TGetAllCategories[] = await db.category.findMany();
+    const result: TGetAllCategories[] = await db.category.findMany({
+      where: tenantId ? { tenantId } : undefined,
+    });
 
     if (!result) return { error: "Can't read categories" };
     return { res: result };
@@ -77,9 +79,11 @@ export const getAllCategories = async () => {
     return { error: "Cant read Category Groups" };
   }
 };
-export const getAllCategoriesJSON = async () => {
+export const getAllCategoriesJSON = async (tenantId?: string) => {
   try {
-    const result: TCategory[] = await db.category.findMany();
+    const result: TCategory[] = await db.category.findMany({
+      where: tenantId ? { tenantId } : undefined,
+    });
 
     if (!result) return { error: "Can't read categories" };
     return { res: convertToJson(result) };
@@ -88,19 +92,23 @@ export const getAllCategoriesJSON = async () => {
   }
 };
 
-export const addCategory = async (data: TAddCategory) => {
+export const addCategory = async (data: TAddCategory, tenantId?: string) => {
   if (!AddCategory.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createData: any = {
+      parentID: data.parentID,
+      name: data.name,
+      url: data.url,
+      slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+      iconSize: [...data.iconSize],
+      iconUrl: data.iconUrl,
+    };
+    if (tenantId) createData.tenantId = tenantId;
+
     const result = await db.category.create({
-      data: {
-        parentID: data.parentID,
-        name: data.name,
-        url: data.url,
-        slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
-        iconSize: [...data.iconSize],
-        iconUrl: data.iconUrl,
-      },
+      data: createData,
     });
     if (!result) return { error: "cant add to database" };
     return { res: result };
@@ -109,16 +117,17 @@ export const addCategory = async (data: TAddCategory) => {
   }
 };
 
-export const updateCategory = async (data: TUpdateCategory) => {
+export const updateCategory = async (data: TUpdateCategory, tenantId?: string) => {
   if (!UpdateCategory.safeParse(data).success) return { error: "Data is no valid" };
 
   const { id, iconSize, ...values } = data;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { id };
+    if (tenantId) where.tenantId = tenantId;
     const result = await db.category.update({
-      where: {
-        id,
-      },
+      where,
       data: {
         iconSize: [...iconSize],
         ...values,
@@ -133,20 +142,22 @@ export const updateCategory = async (data: TUpdateCategory) => {
   }
 };
 
-export const deleteCategory = async (id: string) => {
+export const deleteCategory = async (id: string, tenantId?: string) => {
   if (!id) return { error: "Can't delete it!" };
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereChild: any = { parentID: id };
+    if (tenantId) whereChild.tenantId = tenantId;
     const hasParent = await db.category.findFirst({
-      where: {
-        parentID: id,
-      },
+      where: whereChild,
     });
     if (!hasParent) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const whereDelete: any = { id };
+      if (tenantId) whereDelete.tenantId = tenantId;
       const result = await db.category.delete({
-        where: {
-          id,
-        },
+        where: whereDelete,
       });
 
       if (!result) return { error: "Can't delete it!" };
